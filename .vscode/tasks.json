@@ -1,0 +1,24 @@
+{
+    "version": "2.0.0",
+    "type": "shell",
+    "echoCommand": true,
+    "cwd": "${workspaceFolder}",
+    "tasks": [
+        {
+            "label": "build",
+            "command": "go build",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$go"
+            ]
+        },
+        {
+            "label": "run",
+            "command": "go run main.go",
+            "group": "build"
+        }
+    ]
+}

@@ -6,6 +6,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/google/uuid"
+
 	eventhub "github.com/Azure/azure-event-hubs-go"
 )
 
@@ -20,24 +22,28 @@ func NewEventHubSender(connectionString string) (*EventHubSender, error) {
 	if err != nil {
 		return nil, err
 	}
-	sender := EventHubSender{hub: hub}
-	return &sender, nil
+	sender := &EventHubSender{hub: hub}
+	return sender, nil
 }
 
 // Send sends a message
-func (s *EventHubSender) send(message string) error {
+func (s *EventHubSender) send(num int, key *string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
-	log.Printf("Sending '%s'", message)
-	err := s.hub.Send(ctx, eventhub.NewEventFromString(message))
+	message := fmt.Sprintf("Message %d with partition key %s", num, *key)
+	log.Printf("Sending '%s'\n", message)
+	e := eventhub.NewEventFromString(message)
+	e.PartitionKey = key
+	err := s.hub.Send(ctx, e)
 	return err
 }
 
 // Send sends multiple messages message
 func (s *EventHubSender) Send(limit int) error {
 	for i := 0; i < limit; i++ {
-		message := fmt.Sprintf("Message %d", i)
-		if err := s.send(message); err != nil {
+		uuid, _ := uuid.NewRandom()
+		key := uuid.String()
+		if err := s.send(i, &key); err != nil {
 			return err
 		}
 	}
